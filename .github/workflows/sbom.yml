@@ -1,0 +1,21 @@
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+name: Generate SBOM
+jobs:
+  gen-sbom:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    # Calls the REST API: https://docs.github.com/en/rest/dependency-graph/sboms?apiVersion=2022-11-28
+    - uses: advanced-security/generate-sbom-action@v1
+      id: gensbom
+    - name: Generate artifact attestation
+      uses: actions/attest-build-provenance@v1
+      with:          
+        subject-path: ${{ steps.gensbom.outputs.fileName }}
+    - uses: actions/upload-artifact@v4
+      with:
+        name: sbom
+        path: ${{ steps.gensbom.outputs.fileName }}
