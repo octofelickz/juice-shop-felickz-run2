@@ -34,7 +34,7 @@ jobs:
         cat spdx-${{ steps.gensbom.outputs.fileName }} | sed 's/PACKAGE-MANAGER/PACKAGE_MANAGER/g; s/"DESCRIBE"/"DESCRIBES"/g' > /tmp/spdx.json           
     - name: Convert SPDX SBOM to CycloneDX
       run: |
-          FILE_NAME="spdx-${{ steps.gensbom.outputs.fileName }}"
+          FILE_NAME="${{ steps.gensbom.outputs.fileName }}"
           BASENAME=$(basename "$FILE_NAME" .json)
           cdxBASENAME="cdx-${BASENAME}"
           ./cyclonedx convert --input-file /tmp/spdx.json  --output-file "${cdxBASENAME}.json" --input-format spdxjson --output-format json
