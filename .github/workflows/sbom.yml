@@ -19,11 +19,7 @@ jobs:
     - name: Generate artifact attestation
       uses: actions/attest-build-provenance@v1
       with:          
-        subject-path: ${{ steps.gensbom.outputs.fileName }}
-    - uses: actions/upload-artifact@v4
-      with:
-        name: sbom-spdx
-        path: ${{ steps.gensbom.outputs.fileName }}
+        subject-path: ${{ steps.gensbom.outputs.fileName }}    
     - name: Download CycloneDX CLI
       run: |
           LATEST_RELEASE=$(curl -s https://api.github.com/repos/CycloneDX/cyclonedx-cli/releases/latest | jq -r '.tag_name')
@@ -32,13 +28,24 @@ jobs:
     #fixes: https://github.com/CycloneDX/cyclonedx-cli/issues/316 - writes to temp /tmp/fromspdx/spdx-fixed.json
     - name: workaround cyclonedx-cli/issues/316
       run: |
-        cat ${{ steps.gensbom.outputs.fileName }} | sed 's/PACKAGE-MANAGER/PACKAGE_MANAGER/g; s/"DESCRIBE"/"DESCRIBES"/g' > /tmp/spdx.json 
-          
+        cat ${{ steps.gensbom.outputs.fileName }} | sed 's/PACKAGE-MANAGER/PACKAGE_MANAGER/g; s/"DESCRIBE"/"DESCRIBES"/g' > /tmp/spdx.json           
     - name: Convert SPDX SBOM to CycloneDX
       run: |
           ./cyclonedx convert --input-file /tmp/spdx.json  --output-file sbom.cyclonedx.json --input-format spdxjson --output-format json
-
+          ./cyclonedx convert --input-file /tmp/spdx.json  --output-file sbom.cyclonedx.xml --input-format spdxjson --output-format xml
+    - name: Generate artifact attestation
+      uses: actions/attest-build-provenance@v1
+      with:          
+        subject-path: sbom.cyclonedx.json
+    - name: Generate artifact attestation
+      uses: actions/attest-build-provenance@v1
+      with:          
+        subject-path: sbom.cyclonedx.xml      
     - uses: actions/upload-artifact@v4
       with:
-        name: sbom-cyclonedx
-        path: sbom.cyclonedx.json
+        name: sboms
+        path: |
+              ${{ steps.gensbom.outputs.fileName }}
+              sbom.cyclonedx.json
+              sbom.cyclonedx.xml
+        
