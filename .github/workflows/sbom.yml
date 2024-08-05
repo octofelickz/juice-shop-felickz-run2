@@ -39,6 +39,7 @@ jobs:
           cdxBASENAME="cdx-${BASENAME}"
           ./cyclonedx convert --input-file /tmp/spdx.json  --output-file "${cdxBASENAME}.json" --input-format spdxjson --output-format json
           ./cyclonedx convert --input-file /tmp/spdx.json  --output-file "${cdxBASENAME}.xml" --input-format spdxjson --output-format xml
+          ls cdx*
     - name: Generate artifact attestation - CDX JSON
       uses: actions/attest-build-provenance@v1
       with:          
