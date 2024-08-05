@@ -27,13 +27,12 @@ jobs:
     - name: Download CycloneDX CLI
       run: |
           LATEST_RELEASE=$(curl -s https://api.github.com/repos/CycloneDX/cyclonedx-cli/releases/latest | jq -r '.tag_name')
-          wget https://github.com/CycloneDX/cyclonedx-cli/releases/download/${LATEST_RELEASE}/cyclonedx-linux-x64.zip
-          unzip cyclonedx-linux-x64.zip -d cyclonedx-cli
-          sudo mv cyclonedx-cli/cyclonedx-linux /usr/local/bin/cyclonedx
-  
+          curl -Lo cyclonedx https://github.com/CycloneDX/cyclonedx-cli/releases/download/${LATEST_RELEASE}/cyclonedx-linux-x64
+          chmod +x cyclonedx          
+          
     - name: Convert SPDX SBOM to CycloneDX
       run: |
-          cyclonedx convert --input-file ${{ steps.gensbom.outputs.fileName }} --output-file sbom.cyclonedx.json --input-format spdxjson --output-format json
+          ./cyclonedx convert --input-file ${{ steps.gensbom.outputs.fileName }} --output-file sbom.cyclonedx.json --input-format spdxjson --output-format json
 
     - uses: actions/upload-artifact@v4
       with:
