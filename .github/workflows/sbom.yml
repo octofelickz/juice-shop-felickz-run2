@@ -37,17 +37,18 @@ jobs:
           FILE_NAME="${{ steps.gensbom.outputs.fileName }}"
           BASENAME=$(basename "$FILE_NAME" .json)
           cdxBASENAME="cdx-${BASENAME}"
+          echo "cdxBASENAME=$cdxBASENAME" >> $GITHUB_ENV
           ./cyclonedx convert --input-file /tmp/spdx.json  --output-file "${cdxBASENAME}.json" --input-format spdxjson --output-format json
           ./cyclonedx convert --input-file /tmp/spdx.json  --output-file "${cdxBASENAME}.xml" --input-format spdxjson --output-format xml
           ls cdx*
     - name: Generate artifact attestation - CDX JSON
       uses: actions/attest-build-provenance@v1
       with:          
-        subject-path: cdx.*.json
+        subject-path: ${{ env.cdxBASENAME }}.json
     - name: Generate artifact attestation - CDX XML
       uses: actions/attest-build-provenance@v1
       with:          
-        subject-path: cdx.*.xml
+        subject-path: ${{ env.cdxBASENAME }}.xml
     - uses: actions/upload-artifact@v4
       with:
         name: sboms
