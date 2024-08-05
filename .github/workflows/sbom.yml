@@ -29,10 +29,13 @@ jobs:
           LATEST_RELEASE=$(curl -s https://api.github.com/repos/CycloneDX/cyclonedx-cli/releases/latest | jq -r '.tag_name')
           curl -Lo cyclonedx https://github.com/CycloneDX/cyclonedx-cli/releases/download/${LATEST_RELEASE}/cyclonedx-linux-x64
           chmod +x cyclonedx          
+    #fixes: https://github.com/CycloneDX/cyclonedx-cli/issues/316 - writes to temp /tmp/fromspdx/spdx-fixed.json
+    - name: workaround cyclonedx-cli/issues/316  
+        cat ${{ steps.gensbom.outputs.fileName }} | sed 's/PACKAGE-MANAGER/PACKAGE_MANAGER/g; s/"DESCRIBE"/"DESCRIBES"/g' > /tmp/spdx.json && echo "converting ${{ steps.gensbom.outputs.fileName }}" && cyclonedx convert --input-file /tmp/spdx.json --input-format spdxjson --output-format json --output-file /tmp/fromspdx/spdx-fixed.json
           
     - name: Convert SPDX SBOM to CycloneDX
       run: |
-          ./cyclonedx convert --input-file ${{ steps.gensbom.outputs.fileName }} --output-file sbom.cyclonedx.json --input-format spdxjson --output-format json
+          ./cyclonedx convert --input-file /tmp/fromspdx/spdx-fixed.json --output-file sbom.cyclonedx.json --input-format spdxjson --output-format json
 
     - uses: actions/upload-artifact@v4
       with:
