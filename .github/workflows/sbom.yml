@@ -1,8 +1,13 @@
+# Uses the dependency-graph/sboms REST API to aquire an SPDX SBOM, attest with build provenance, and upload as an artifact.
 on:
   push:
     branches: [ "master" ]
   workflow_dispatch:
 name: Generate SBOM
+permissions:
+  id-token: write
+  contents: read
+  attestations: write
 jobs:
   gen-sbom:
     runs-on: ubuntu-latest
