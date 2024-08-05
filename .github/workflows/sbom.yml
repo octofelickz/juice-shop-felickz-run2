@@ -30,7 +30,8 @@ jobs:
           curl -Lo cyclonedx https://github.com/CycloneDX/cyclonedx-cli/releases/download/${LATEST_RELEASE}/cyclonedx-linux-x64
           chmod +x cyclonedx          
     #fixes: https://github.com/CycloneDX/cyclonedx-cli/issues/316 - writes to temp /tmp/fromspdx/spdx-fixed.json
-    - name: workaround cyclonedx-cli/issues/316  
+    - name: workaround cyclonedx-cli/issues/316
+      run: |
         cat ${{ steps.gensbom.outputs.fileName }} | sed 's/PACKAGE-MANAGER/PACKAGE_MANAGER/g; s/"DESCRIBE"/"DESCRIBES"/g' > /tmp/spdx.json && echo "converting ${{ steps.gensbom.outputs.fileName }}" && cyclonedx convert --input-file /tmp/spdx.json --input-format spdxjson --output-format json --output-file /tmp/fromspdx/spdx-fixed.json
           
     - name: Convert SPDX SBOM to CycloneDX
