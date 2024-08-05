@@ -53,7 +53,7 @@ jobs:
       with:
         name: sboms
         path: |
-              spdx.*.json
-              cdx.*.json
-              cdx.*.xml
+              spdx-${{ steps.gensbom.outputs.fileName }}
+              ${{ env.cdxBASENAME }}.xml
+              ${{ env.cdxBASENAME }}.json
         
