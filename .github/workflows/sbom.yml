@@ -65,9 +65,9 @@ jobs:
     - name: sbomqs spdx quality score
       run: |
         sbomqs score spdx-${{ steps.gensbom.outputs.fileName }} > spdx-${{ env.BASENAME }}-sbomqs.txt
-        cat spdx-${{ env.BASENAME }}-sbomqs.txt
         echo "" >> spdx-${{ env.BASENAME }}-sbomqs.txt
         sbomqs share spdx-${{ steps.gensbom.outputs.fileName }}  >> spdx-${{ env.BASENAME }}-sbomqs.txt
+        cat spdx-${{ env.BASENAME }}-sbomqs.txt
     - name: Generate artifact attestation - SBOMQ
       uses: actions/attest-build-provenance@v1
       with:          
