@@ -24,10 +24,6 @@ jobs:
     - name: Rename SBOM File to spdx- prefix
       run: | 
         mv ${{ steps.gensbom.outputs.fileName }}  spdx-${{ steps.gensbom.outputs.fileName }}  
-    - name: Generate artifact attestation - SPDX JSON
-      uses: actions/attest-build-provenance@v1
-      with:          
-        subject-path: spdx-${{ steps.gensbom.outputs.fileName }}    
     - name: Download CycloneDX CLI
       run: |
           LATEST_RELEASE=$(curl -s https://api.github.com/repos/CycloneDX/cyclonedx-cli/releases/latest | jq -r '.tag_name')
@@ -47,14 +43,6 @@ jobs:
           ./cyclonedx convert --input-file /tmp/spdx.json  --output-file "${cdxBASENAME}.json" --input-format spdxjson --output-format json
           ./cyclonedx convert --input-file /tmp/spdx.json  --output-file "${cdxBASENAME}.xml" --input-format spdxjson --output-format xml
           ls cdx*
-    - name: Generate artifact attestation - CDX JSON
-      uses: actions/attest-build-provenance@v1
-      with:          
-        subject-path: ${{ env.cdxBASENAME }}.json
-    - name: Generate artifact attestation - CDX XML
-      uses: actions/attest-build-provenance@v1
-      with:          
-        subject-path: ${{ env.cdxBASENAME }}.xml
     - name: sbom quality score install (interlynk-io/sbomqs)
       run: |
         # go version
@@ -68,10 +56,25 @@ jobs:
         echo "" >> spdx-${{ env.BASENAME }}-sbomqs.txt
         sbomqs share spdx-${{ steps.gensbom.outputs.fileName }}  >> spdx-${{ env.BASENAME }}-sbomqs.txt
         cat spdx-${{ env.BASENAME }}-sbomqs.txt
-    - name: Generate artifact attestation - SBOMQ
+    - name: Generate artifact attestations
+      id: genprovenance
       uses: actions/attest-build-provenance@v1
       with:          
-        subject-path: spdx-${{ env.BASENAME }}-sbomqs.txt
+        subject-path: |
+          spdx-${{ steps.gensbom.outputs.fileName }}
+          ${{ env.cdxBASENAME }}.xml
+          ${{ env.cdxBASENAME }}.json
+          spdx-${{ env.BASENAME }}-sbomqs.txt
+    - uses: austenstone/job-summary-to-pdf@main
+      id: job-summary
+      with:
+          create-pdf: false
+          create-pdf-artifact: false
+    - name: Copy Attestation Manfiest to output
+      run: |
+        echo "Attestation Bundle Path: ${{ steps.genprovenance.outputs.bundle-path }}" 
+        cp ${{ steps.genprovenance.outputs.bundle-path }} attestation.jsonl
+        cp "${{ steps.job-summary.outputs.html-file }}" attestation.html
     - uses: actions/upload-artifact@v4
       with:
         name: sboms
@@ -80,5 +83,7 @@ jobs:
               ${{ env.cdxBASENAME }}.xml
               ${{ env.cdxBASENAME }}.json
               spdx-${{ env.BASENAME }}-sbomqs.txt
+              attestation.jsonl
+              attestation.html
 
         
